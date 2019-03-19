@@ -17,12 +17,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface LYBitCellAttributes : NSObject
 
 @property (assign, nonatomic) CGSize cellSize;
-@property (assign, nonatomic) LYBitFieldStyle Style;
-@property (assign, nonatomic) LYBitFieldBorderAnimation cursorAnmation;
+@property (assign, nonatomic) LYBitFieldStyle style;
 @property (assign, nonatomic) CGFloat borderWidth;
+@property (assign, nonatomic) CGFloat underLineWidth;
 @property (strong, nonatomic) UIFont *textFont;
 @property (strong, nonatomic) UIColor *textColor;
 @property (strong, nonatomic) UIColor *borderColor;
+@property (strong, nonatomic) UIImage *borderImage;
+@property (strong, nonatomic) UIImage *underLineImage;
+@property (assign, nonatomic) LYBitCellState editState;
 
 @end
 
@@ -34,9 +37,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface LYBitField : UIView
 
-@property (strong, nonatomic) LYBitCellAttributes *noEditAttributes;
+@property (strong, nonatomic) LYBitCellAttributes *unEditAttributes;
 @property (strong, nonatomic) LYBitCellAttributes *editingAttributes;
 @property (strong, nonatomic) LYBitCellAttributes *editedAttributes;
+
+@property (assign, nonatomic) LYBitFieldBorderAnimation cursorAnmation;
+
+@property (assign, nonatomic) NSInteger cellNumber;
 
 @end
 

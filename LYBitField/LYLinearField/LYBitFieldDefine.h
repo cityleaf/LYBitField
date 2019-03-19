@@ -1,13 +1,28 @@
 //
-//  LYLinerFieldDefine.h
-//  LYUnitField
+//  LYBitFieldDefine.h
+//  LYBitField
 //
-//  Created by admin on 2019/3/19.
-//  Copyright © 2019 admin. All rights reserved.
+//  Created by 刘宇 on 2019/3/19.
+//  Copyright © 2019 刘宇. All rights reserved.
 //
 
 #ifndef LYBitFieldDefine_h
 #define LYBitFieldDefine_h
+
+#define CBColorRGB(r,g,b) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1.0]
+
+/**
+ cell的状态
+
+ - LYBitCellStateUnEdit: 未编辑状态
+ - LYBitCellStateEditing: 正在编辑状态
+ - LYBitCellStateEdited: 已经编辑状态
+ */
+typedef NS_ENUM(NSUInteger, LYBitCellState) {
+    LYBitCellStateUnEdit,
+    LYBitCellStateEditing,
+    LYBitCellStateEdited,
+};
 
 /**
  cell样式
