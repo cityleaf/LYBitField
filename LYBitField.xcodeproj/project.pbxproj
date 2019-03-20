@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		17C1C402224279150020AF9F /* LYViewFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C1C400224279150020AF9F /* LYViewFrame.m */; };
 		847AFCC82240E9A3005BCBA4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 847AFCC72240E9A3005BCBA4 /* AppDelegate.m */; };
 		847AFCCB2240E9A3005BCBA4 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 847AFCCA2240E9A3005BCBA4 /* ViewController.m */; };
 		847AFCCE2240E9A3005BCBA4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 847AFCCC2240E9A3005BCBA4 /* Main.storyboard */; };
@@ -18,6 +19,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		17C1C400224279150020AF9F /* LYViewFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LYViewFrame.m; sourceTree = "<group>"; };
+		17C1C401224279150020AF9F /* LYViewFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LYViewFrame.h; sourceTree = "<group>"; };
 		847AFCC32240E9A3005BCBA4 /* LYBitField.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LYBitField.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		847AFCC62240E9A3005BCBA4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		847AFCC72240E9A3005BCBA4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -82,6 +85,8 @@
 		847AFCDC2240E9B1005BCBA4 /* LYLinearField */ = {
 			isa = PBXGroup;
 			children = (
+				17C1C401224279150020AF9F /* LYViewFrame.h */,
+				17C1C400224279150020AF9F /* LYViewFrame.m */,
 				847AFCDD2240EA8F005BCBA4 /* LYBitField.h */,
 				847AFCDE2240EA8F005BCBA4 /* LYBitField.m */,
 				847AFCE02240F434005BCBA4 /* LYBitFieldDefine.h */,
@@ -162,6 +167,7 @@
 			files = (
 				847AFCCB2240E9A3005BCBA4 /* ViewController.m in Sources */,
 				847AFCD62240E9A4005BCBA4 /* main.m in Sources */,
+				17C1C402224279150020AF9F /* LYViewFrame.m in Sources */,
 				847AFCDF2240EA8F005BCBA4 /* LYBitField.m in Sources */,
 				847AFCC82240E9A3005BCBA4 /* AppDelegate.m in Sources */,
 			);
