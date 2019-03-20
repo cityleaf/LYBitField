@@ -6,7 +6,7 @@
 //  Copyright © 2017年 刘宇. All rights reserved.
 //
 
-#import "ViewFrame.h"
+#import "LYViewFrame.h"
 
 @implementation UIView (Frame)
 

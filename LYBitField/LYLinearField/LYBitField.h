@@ -32,6 +32,8 @@ typedef void(^LYBitListen)(NSString *keypath, id value);
 @property (strong, nonatomic) UIColor *textColor;
 /** 边框颜色 */
 @property (strong, nonatomic) UIColor *borderColor;
+/** cell背景颜色 */
+@property (strong, nonatomic) UIColor *cellBackgroundColor;
 /** 边框图片 */
 @property (strong, nonatomic) UIImage *borderImage;
 /** 下划线图片 */
@@ -72,6 +74,7 @@ typedef void(^LYBitListen)(NSString *keypath, id value);
 @property (assign, nonatomic) LYBitFieldBorderAnimation cursorAnmation;
 /** 框数量 */
 @property (assign, nonatomic) NSInteger cellNumber;
+@property (assign, nonatomic) CGFloat cellSpace;
 
 @end
 
