@@ -10,6 +10,9 @@
 #define LYBitFieldDefine_h
 
 #define CBColorRGB(r,g,b) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1.0]
+#define CBWeakSelf __weak __typeof__(self) WeakSelf = self;
+#define CBStrongSelf __strong __typeof__(self) self = WeakSelf;
+#define CBStrongSelfElseReturn __strong __typeof__(self) self = WeakSelf; if(!self) return;
 
 /**
  cell的状态

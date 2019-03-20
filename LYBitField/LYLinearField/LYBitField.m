@@ -7,6 +7,78 @@
 //
 
 #import "LYBitField.h"
+#import <objc/runtime.h>
+
+@implementation LYBitCellAttributes
+{
+    NSArray *_propertyLists;
+}
+
+- (void)dealloc
+{
+    [self removeOberver];
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _propertyLists = [self allPropertyNames];
+        [self addObserver];
+    }
+    return self;
+}
+
+- (NSArray *)allPropertyNames{
+   
+    unsigned int propertyCount = 0, i = 0;
+    objc_property_t *properties = class_copyPropertyList(self.class, &propertyCount);
+    
+    NSMutableArray *allNames = [[NSMutableArray alloc] initWithCapacity:propertyCount];
+    
+    if (properties) {
+        for (i = 0; i < propertyCount; i++) {
+            objc_property_t property = properties[i];
+            
+            NSString *propertyName = [[NSString alloc] initWithCString:property_getName(property) encoding:NSUTF8StringEncoding];
+            
+            [allNames addObject:propertyName];
+        }
+        free(properties);
+    }
+
+    return allNames;
+}
+
+- (void)addObserver
+{
+    for (int i = 0; i < _propertyLists.count; i++) {
+        [self addObserver:self forKeyPath:_propertyLists[i] options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
+    }
+}
+
+- (void)removeOberver
+{
+    for (int i = 0; i < _propertyLists.count; i++) {
+        [self removeObserver:self forKeyPath:_propertyLists[i] context:NULL];
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
+{
+    if ([_propertyLists containsObject:keyPath]) {
+        if (self.listen) {
+            self.listen(keyPath, [self valueForKey:keyPath]);
+        }
+    }
+}
+
+- (void)printPropertiesLog
+{
+    return NSLog(@"_propertyLists \n %@",_propertyLists);
+}
+
+@end
 
 @implementation LYBitCell
 {
@@ -16,7 +88,7 @@
 
 - (void)dealloc
 {
-    [self removeOberver];
+    
 }
 
 - (instancetype)init
@@ -63,12 +135,6 @@
 
 - (void)setAttributes:(LYBitCellAttributes *)attributes
 {
-    if (_attributes) {
-        [self removeOberver];
-    }
-    
-    [self addObserver];
-    
     _attributes = attributes;
     
     _textfield.font = attributes.textFont;
@@ -96,57 +162,6 @@
     } else {
         // 无边框和下划线
         _borderView.hidden = YES;
-    }
-}
-
-- (void)addObserver
-{
-    [self addObserver:self forKeyPath:@"attributes.style" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-    [self addObserver:self forKeyPath:@"attributes.borderWidth" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-    [self addObserver:self forKeyPath:@"attributes.underLineWidth" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-    [self addObserver:self forKeyPath:@"attributes.textFont" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-    [self addObserver:self forKeyPath:@"attributes.textColor" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-    [self addObserver:self forKeyPath:@"attributes.borderColor" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-    [self addObserver:self forKeyPath:@"attributes.borderImage" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-    [self addObserver:self forKeyPath:@"attributes.underLineImage" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-    [self addObserver:self forKeyPath:@"attributes.editState" options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:NULL];
-}
-
-- (void)removeOberver
-{
-    [self removeObserver:self forKeyPath:@"attributes.style" context:NULL];
-    [self removeObserver:self forKeyPath:@"attributes.borderWidth" context:NULL];
-    [self removeObserver:self forKeyPath:@"attributes.underLineWidth" context:NULL];
-    [self removeObserver:self forKeyPath:@"attributes.textFont" context:NULL];
-    [self removeObserver:self forKeyPath:@"attributes.textColor" context:NULL];
-    [self removeObserver:self forKeyPath:@"attributes.borderColor" context:NULL];
-    [self removeObserver:self forKeyPath:@"attributes.borderImage" context:NULL];
-    [self removeObserver:self forKeyPath:@"attributes.underLineImage" context:NULL];
-    [self removeObserver:self forKeyPath:@"attributes.editState" context:NULL];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
-{
-    if ([keyPath isEqualToString:@"attributes.style"]) {
-        
-    } else if ([keyPath isEqualToString:@"attributes.borderWidth"]){
-        
-    } else if ([keyPath isEqualToString:@"attributes.underLineWidth"]){
-        
-    } else if ([keyPath isEqualToString:@"attributes.textFont"]){
-        
-    } else if ([keyPath isEqualToString:@"attributes.textColor"]){
-        
-    } else if ([keyPath isEqualToString:@"attributes.borderColor"]){
-        
-    } else if ([keyPath isEqualToString:@"attributes.borderImage"]){
-        
-    } else if ([keyPath isEqualToString:@"attributes.underLineImage"]){
-        
-    } else if ([keyPath isEqualToString:@"attributes.editState"]){
-        
-    } else {
-        
     }
 }
 
@@ -189,9 +204,9 @@
         attributes3.textFont = [UIFont systemFontOfSize:16];
         attributes3.textColor = CBColorRGB(244, 67, 54);
         
-        self.unEditAttributes = attributes1;
-        self.editingAttributes = attributes2;
-        self.editedAttributes = attributes3;
+        _unEditAttributes = attributes1;
+        _editingAttributes = attributes2;
+        _editedAttributes = attributes3;
     }
     
     return self;
