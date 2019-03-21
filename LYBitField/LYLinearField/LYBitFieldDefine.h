@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, LYBitFieldStyle) {
 };
 
 /**
- 光标边框动画
+ 边框动画
  
  - LYLinearFieldBorderAnimationNo: 无动画
  - LYLinearFieldBorderAnimationFlash: 闪现动画

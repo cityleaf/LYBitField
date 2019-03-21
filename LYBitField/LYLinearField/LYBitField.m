@@ -10,6 +10,9 @@
 #import "LYViewFrame.h"
 #import <objc/runtime.h>
 
+/**
+ * *********************** 属性 ***********************
+ */
 @interface LYBitCellAttributes () <NSCopying>
 
 @end
@@ -28,11 +31,14 @@
 {
     LYBitCellAttributes *attributes = [[LYBitCellAttributes alloc] init];
     attributes.style = self.style;
+    attributes.editState = self.editState;
     attributes.borderWidth = self.borderWidth;
+    attributes.borderCorner = self.borderCorner;
     attributes.borderColor = self.borderColor;
     attributes.underLineWidth = self.underLineWidth;
     attributes.textFont = self.textFont;
     attributes.textColor = self.textColor;
+    attributes.cursorColor = self.cursorColor;
     attributes.cellSize = self.cellSize;
     attributes.cellBackgroundColor = self.cellBackgroundColor;
     return attributes;
@@ -45,12 +51,14 @@
         _propertyLists = [self allPropertyNames];
         self.style = LYBitFieldStyleUnderLine;
         self.borderWidth = 2;
-        self.borderColor = UIColor.grayColor;
-        self.underLineWidth = 50;
-        self.textFont = [UIFont systemFontOfSize:16];
-        self.textColor = CBColorRGB(244, 67, 54);
+        self.borderCorner = 0;
+        self.borderColor = CBColorRGB(244, 67, 54);
+        self.underLineWidth = 40;
+        self.textFont = [UIFont systemFontOfSize:26];
+        self.textColor = CBColorRGB(26, 26, 26);
+        self.cursorColor = CBColorRGB(244, 67, 54);
         self.cellSize = CGSizeMake(40, 40);
-        self.cellBackgroundColor = CBColorRGB(155, 155, 155);
+        self.cellBackgroundColor = CBColorRGB(255, 255, 255);
         [self addObserver];
     }
     return self;
@@ -95,7 +103,7 @@
 {
     if ([_propertyLists containsObject:keyPath]) {
         if (self.listen) {
-            self.listen(keyPath, [self valueForKey:keyPath]);
+            self.listen(self, keyPath, [self valueForKey:keyPath]);
         }
     }
 }
@@ -107,6 +115,13 @@
 
 @end
 
+
+/**
+ * *********************** 单个cell ***********************
+ */
+@interface LYBitCell () <UITextFieldDelegate>
+
+@end
 @implementation LYBitCell
 {
     __weak UITextField *_textfield;
@@ -133,9 +148,12 @@
 {
     UIImageView *borderView = [UIImageView.alloc init];
     [self addSubview:borderView];
+    _borderView = borderView;
     
     UITextField *textfield = [UITextField.alloc init];
     textfield.textAlignment = NSTextAlignmentCenter;
+    textfield.keyboardType = UIKeyboardTypeNumberPad;
+    textfield.delegate = self;
     [self addSubview:textfield];
     _textfield = textfield;
 }
@@ -149,12 +167,12 @@
     
     if (self.attributes.style == LYBitFieldStyleBorder) {
         // 边框
-        _borderView.frame = CGRectMake(0, 0, width, height);
-        _textfield.frame = CGRectMake(0, 0, width, height);
+        _borderView.frame = CGRectZero;
+        _textfield.frame = CGRectMake(0, 0, width,height);
     } else if (self.attributes.style == LYBitFieldStyleUnderLine) {
         // 下划线
         _borderView.frame = CGRectMake((width - self.attributes.underLineWidth) * 0.5, height - self.attributes.borderWidth, self.attributes.underLineWidth, self.attributes.borderWidth);
-        _textfield.frame = CGRectMake(0, 0, width, height);
+        _textfield.frame = CGRectMake(0, 0, width, height - self.attributes.borderWidth);
     } else {
         // 无边框和下划线
         _borderView.frame = CGRectZero;
@@ -167,36 +185,121 @@
     
     _textfield.font = attributes.textFont;
     _textfield.textColor = attributes.textColor;
-    self.backgroundColor = attributes.cellBackgroundColor;
+    _textfield.backgroundColor = attributes.cellBackgroundColor;
+    _textfield.tintColor = attributes.cursorColor;
     
     if (self.attributes.style == LYBitFieldStyleBorder) {
         // 边框
-        _borderView.hidden = NO;
-        if (self.attributes.borderImage) {
-            _borderView.image = attributes.borderImage;
-        } else {
-            _borderView.layer.borderColor = attributes.borderColor.CGColor;
-            _borderView.layer.borderWidth = attributes.borderWidth;
-            _borderView.backgroundColor = UIColor.clearColor;
-        }
+        _borderView.hidden = YES;
+        _textfield.layer.borderColor = attributes.borderColor.CGColor;
+        _textfield.layer.borderWidth = attributes.borderWidth;
+        _textfield.layer.cornerRadius = attributes.borderCorner;
     } else if (self.attributes.style == LYBitFieldStyleUnderLine) {
         // 下划线
         _borderView.hidden = NO;
         _borderView.layer.borderWidth = 0;
-        if (self.attributes.underLineImage) {
-            _borderView.image = attributes.borderImage;
-        } else {
-            _borderView.backgroundColor = attributes.borderColor;
-        }
+        _textfield.layer.cornerRadius = 0;
+        _borderView.layer.cornerRadius = attributes.borderCorner;
+        _borderView.backgroundColor = attributes.borderColor;
     } else {
         // 无边框和下划线
+        _textfield.layer.cornerRadius = 0;
         _borderView.hidden = YES;
     }
+    
+    if (attributes.editState == LYBitCellStateEditing) {
+        // 正在编辑
+        self->_textfield.enabled = YES;
+        [self->_textfield becomeFirstResponder];
+    } else if (attributes.editState == LYBitCellStateUnEdit) {
+        // 未编辑
+        self->_textfield.enabled = NO;
+    } else {
+        // 已编辑
+        self->_textfield.enabled = NO;
+    }
+    
+    // 处理监听
+    CBWeakSelf
+    attributes.listen = ^(LYBitCellAttributes * _Nonnull object, NSString * _Nonnull keypath, id  _Nonnull value) {
+        CBStrongSelfElseReturn
+        if ([keypath isEqualToString:@"style"]) {
+            NSInteger style = [value integerValue];
+            if (style == LYBitFieldStyleBorder) {
+                self->_borderView.hidden = YES;
+                self->_textfield.layer.borderColor = object.borderColor.CGColor;
+                self->_textfield.layer.borderWidth = object.borderWidth;
+                self->_textfield.layer.cornerRadius = object.borderCorner;
+            } else if (self.attributes.style == LYBitFieldStyleUnderLine) {
+                // 下划线
+                self->_borderView.hidden = NO;
+            } else {
+                // 无边框和下划线
+                self->_borderView.hidden = YES;
+                self->_textfield.layer.borderWidth = 0;
+            }
+            [self setNeedsLayout];
+        }
+        
+        if ([keypath isEqualToString:@"borderCorner"]) {
+            CGFloat corner = [value floatValue];
+            if ((attributes.style == LYBitFieldStyleUnderLine && corner <= attributes.borderWidth * 0.5) || (corner <= MIN(self.width, self.height) * 0.5 && attributes.style == LYBitFieldStyleBorder)) {
+                self->_textfield.layer.cornerRadius = corner;
+                self->_borderView.layer.cornerRadius = corner;
+                [self setNeedsLayout];
+            }
+        }
+        
+        if ([keypath isEqualToString:@"underLineWidth"]) {
+            [self setNeedsLayout];
+        }
+        
+        if ([keypath isEqualToString:@"cursorColor"]) {
+            UIColor *color = value;
+            self->_textfield.tintColor = color;
+        }
+        
+        if ([keypath isEqualToString:@"editState"]) {
+            LYBitCellState state = [value integerValue];
+            if (state == LYBitCellStateEditing) {
+                // 正在编辑
+                self->_textfield.enabled = YES;
+                [self->_textfield becomeFirstResponder];
+            } else if (state == LYBitCellStateUnEdit) {
+                // 未编辑
+                self->_textfield.enabled = NO;
+            } else {
+                // 已编辑
+                self->_textfield.enabled = NO;
+            }
+        }
+    };
+}
+
+- (void)setText:(NSString *)text
+{
+    if (text.length > 0) {
+        self.attributes.editState = LYBitCellStateEdited;
+    }
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    NSString *newString = [textField.text stringByReplacingCharactersInRange:range withString:string];
+    if (newString.length < 2) {
+        return YES;
+    } else {
+        
+    }
+    return NO;
 }
 
 @end
 
 
+/**
+ * *********************** 主控件 ***********************
+ */
 @implementation LYBitField
 {
     NSMutableArray <LYBitCell *>*_fieldArray;
@@ -210,15 +313,14 @@
     if (self) {
         _fieldArray = [NSMutableArray array];
         self.cellSpace = 20;
+        self.cursorColor = CBColorRGB(244, 67, 54);
         
         LYBitCellAttributes *attributes1 = [LYBitCellAttributes.alloc init];
         attributes1.editState = LYBitCellStateUnEdit;
-        attributes1.cellBackgroundColor = UIColor.blueColor;
         [self addListen:attributes1];
         
         LYBitCellAttributes *attributes2 = [LYBitCellAttributes.alloc init];
         attributes2.editState = LYBitCellStateEditing;
-        attributes2.cellBackgroundColor = UIColor.redColor;
         [self addListen:attributes2];
         
         LYBitCellAttributes *attributes3 = [LYBitCellAttributes.alloc init];
@@ -295,22 +397,83 @@
     [self setNeedsLayout];
 }
 
+- (void)setCursorColor:(UIColor *)cursorColor
+{
+    _cursorColor = cursorColor;
+    
+    [_fieldArray enumerateObjectsUsingBlock:^(LYBitCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.attributes.cursorColor = cursorColor;
+    }];
+}
+
 - (void)addListen:(LYBitCellAttributes *)attributes
 {
     CBWeakSelf
     
-    if (attributes.editState == LYBitCellStateUnEdit) {
-        // 未编辑
-    } else if (attributes.editState == LYBitCellStateEditing) {
-        // 正在编辑
-    } else {
-        // 已编辑
-    }
-    
-    attributes.listen = ^(NSString * _Nonnull keypath, id  _Nonnull value) {
+    attributes.listen = ^(LYBitCellAttributes * _Nonnull object, NSString * _Nonnull keypath, id  _Nonnull value) {
         CBStrongSelfElseReturn
         if ([keypath isEqualToString:@"cellSize"]) {
             [self setNeedsLayout];
+        }
+        
+        if ([keypath isEqualToString:@"underLineWidth"]) {
+            if (attributes.editState == LYBitCellStateUnEdit) {
+                // 未编辑
+                for (NSInteger i = self->_editingIndex + 1; i < self.cellNumber; i++) {
+                    LYBitCell *cell = self->_fieldArray[i];
+                    cell.attributes.underLineWidth = [value floatValue];
+                }
+            } else if (attributes.editState == LYBitCellStateEditing) {
+                // 正在编辑
+                LYBitCell *cell = self->_fieldArray[self->_editingIndex];
+                cell.attributes.underLineWidth = [value floatValue];
+            } else {
+                // 已编辑
+                for (NSInteger i = 0; i < self->_editingIndex; i++) {
+                    LYBitCell *cell = self->_fieldArray[i];
+                    cell.attributes.underLineWidth = [value floatValue];
+                }
+            }
+        }
+        
+        if ([keypath isEqualToString:@"style"]) {
+            if (attributes.editState == LYBitCellStateUnEdit) {
+                // 未编辑
+                for (NSInteger i = self->_editingIndex + 1; i < self.cellNumber; i++) {
+                    LYBitCell *cell = self->_fieldArray[i];
+                    cell.attributes.style = [value integerValue];
+                }
+            } else if (attributes.editState == LYBitCellStateEditing) {
+                // 正在编辑
+                LYBitCell *cell = self->_fieldArray[self->_editingIndex];
+                cell.attributes.style = [value integerValue];
+            } else {
+                // 已编辑
+                for (NSInteger i = 0; i < self->_editingIndex; i++) {
+                    LYBitCell *cell = self->_fieldArray[i];
+                    cell.attributes.style = [value integerValue];
+                }
+            }
+        }
+        
+        if ([keypath isEqualToString:@"borderCorner"]) {
+            if (attributes.editState == LYBitCellStateUnEdit) {
+                // 未编辑
+                for (NSInteger i = self->_editingIndex + 1; i < self.cellNumber; i++) {
+                    LYBitCell *cell = self->_fieldArray[i];
+                    cell.attributes.borderCorner = [value floatValue];
+                }
+            } else if (attributes.editState == LYBitCellStateEditing) {
+                // 正在编辑
+                LYBitCell *cell = self->_fieldArray[self->_editingIndex];
+                cell.attributes.borderCorner = [value floatValue];
+            } else {
+                // 已编辑
+                for (NSInteger i = 0; i < self->_editingIndex; i++) {
+                    LYBitCell *cell = self->_fieldArray[i];
+                    cell.attributes.borderCorner = [value floatValue];
+                }
+            }
         }
     };
 }
@@ -321,6 +484,17 @@
 {
     LYBitCell *cell = [LYBitCell.alloc init];
     cell.attributes = [attributes copy];
+    CBWeakSelf
+    cell.finishedBlock = ^(NSString * _Nonnull value) {
+        CBStrongSelfElseReturn
+//        if (value) {
+//            NSInteger index = ++self->_editingIndex % self.cellNumber;
+//            if (index < self.cellNumber) {
+//                LYBitCell *nextCell = self->_fieldArray[index];
+////                nextCell.attributes.editState = LYBitCellStateEditing;
+//            }
+//        }
+    };
     return cell;
 }
 

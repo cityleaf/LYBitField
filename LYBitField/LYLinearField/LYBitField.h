@@ -11,7 +11,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void(^LYBitListen)(NSString *keypath, id value);
+@class LYBitCellAttributes;
+
+typedef void(^LYBitListen)(LYBitCellAttributes *object, NSString *keypath, id value);
 
 /**
  * cell的属性模型
@@ -26,12 +28,16 @@ typedef void(^LYBitListen)(NSString *keypath, id value);
 @property (assign, nonatomic) CGFloat borderWidth;
 /** 下划线宽度 */
 @property (assign, nonatomic) CGFloat underLineWidth;
+/** 边框|下划线 的圆角 */
+@property (assign, nonatomic) CGFloat borderCorner;
 /** 文本字体 */
 @property (strong, nonatomic) UIFont *textFont;
 /** 文本颜色 */
 @property (strong, nonatomic) UIColor *textColor;
 /** 边框颜色 */
 @property (strong, nonatomic) UIColor *borderColor;
+/** 光标颜色 */
+@property (strong, nonatomic) UIColor *cursorColor;
 /** cell背景颜色 */
 @property (strong, nonatomic) UIColor *cellBackgroundColor;
 /** 边框图片 */
@@ -55,6 +61,8 @@ typedef void(^LYBitListen)(NSString *keypath, id value);
 
 /** 该框的属性对象 */
 @property (strong, nonatomic) LYBitCellAttributes *attributes;
+@property (copy, nonatomic) NSString *text;
+@property (copy, nonatomic) void(^finishedBlock)(NSString *value);
 
 @end
 
@@ -72,9 +80,13 @@ typedef void(^LYBitListen)(NSString *keypath, id value);
 @property (strong, nonatomic, readonly) LYBitCellAttributes *editedAttributes;
 /** 光标动画 */
 @property (assign, nonatomic) LYBitFieldBorderAnimation cursorAnmation;
+@property (strong, nonatomic) UIColor *cursorColor;
 /** 框数量 */
 @property (assign, nonatomic) NSInteger cellNumber;
+/** 间距 */
 @property (assign, nonatomic) CGFloat cellSpace;
+
+@property (copy, nonatomic) void (^editingBlock)(NSString *value);
 
 @end
 
